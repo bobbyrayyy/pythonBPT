@@ -1,9 +1,17 @@
-import random  # for demo test
 
 splits = 0
 parent_splits = 0
 fusions = 0
 parent_fusions = 0
+
+# class LLNode(object):
+#     """
+#     Linked List node 
+#     """
+#     def __init__(self):
+#         self.value = 
+#         self.next = None
+
 
 
 class Node(object):
@@ -205,11 +213,22 @@ class BPlusTree(object):
     """
     root: Node
 
-    def __init__(self, maximum=4):
+    def __init__(self, maximum):  
         self.root = Leaf()
-        self.maximum: int = maximum if maximum > 2 else 2
+        self.maximum: int = maximum 
         self.minimum: int = self.maximum // 2
         self.depth = 0
+        self.count_records: int = 0
+        self.count_blocks: int = 1
+
+    def get_count_blocks(self):
+        return self.count_blocks
+
+    def get_count_records(self):
+        return self.count_records
+
+    def get_depth(self):
+        return self.depth
 
     def find(self, key) -> Leaf:
         """ find the leaf
@@ -250,8 +269,11 @@ class BPlusTree(object):
         if leaf is None:
             leaf = self.find(key)
         leaf[key] = value
+
         if len(leaf.keys) > self.maximum:
             self.insert_index(*leaf.split())
+            
+
 
     def insert(self, key, value):
         """
@@ -259,11 +281,16 @@ class BPlusTree(object):
             (bool,Leaf): the leaf where the key is inserted. return False if already has same key
         """
         leaf = self.find(key)
-        if key in leaf.keys:
-            return False, leaf
-        else:
-            self.__setitem__(key, value, leaf)
-            return True, leaf
+        # if key in leaf.keys:
+        #     return False, leaf
+        # else:
+        #     self.__setitem__(key, value, leaf)
+        #     return True, leaf
+
+        # insert record regardless if duplicate key
+        self.__setitem__(key, value, leaf)
+        self.count_records += 1
+        return True, leaf
 
     def insert_index(self, key, values: list[Node]):
         """For a parent and child node,
@@ -277,9 +304,10 @@ class BPlusTree(object):
             return
 
         parent[key] = values
-        # If the node is full, split the  node into two.
+        # If the node is full, split the node into two.
         if len(parent.keys) > self.maximum:
             self.insert_index(*parent.split())
+
         # Once a leaf node is split, it consists of a internal node and two leaf nodes.
         # These need to be re-inserted back into the tree.
 
@@ -330,10 +358,10 @@ class BPlusTree(object):
         """Prints the keys at top 5 levels."""
         if remaining_levels <= 0:
             return
-            
+
         if node is None:
             node = self.root
-        print(_prefix, "`- " if _last else "|- ", node.keys, sep="", file=file)
+        print(_prefix, "`- " if _last else "|- ", node.values, sep="", file=file)
         _prefix += "   " if _last else "|  "
 
         if type(node) is Node:
